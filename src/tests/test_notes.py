@@ -4,10 +4,14 @@ import pytest
 
 from app.api import crud
 
+TAG_ONE = "blossom-tiger-soap"
+SUMMARY_ONE = "all the things you are"
+REVISION_ONE = "fadecafe"
+LOCAL_TIME_ONE = "2020-12-31T12:34:56.123456Z"
 
 def test_create_note(test_app, monkeypatch):
-    test_request_payload = {"tag": "blossom-tiger-soap", "summary": "all the things you are", "hash": "fadecafe", "local_time": "2020-12-31T12:34:56.123456Z"}
-    test_response_payload = {"id": 1, "tag": "blossom-tiger-soap", "summary": "all the things you are", "hash": "fadecafe", "local_time": "2020-12-31T12:34:56.123456Z"}
+    test_request_payload = {"tag": TAG_ONE, "summary": SUMMARY_ONE, "revision": REVISION_ONE, "local_time": LOCAL_TIME_ONE}
+    test_response_payload = {"id": 1, "tag": TAG_ONE, "summary": SUMMARY_ONE, "revision": REVSION_ONE, "local_time": LOCAL_TIME_ONE}
 
     async def mock_post(payload):
         return 1
@@ -21,7 +25,7 @@ def test_create_note(test_app, monkeypatch):
 
 
 def test_create_note_invalid_json(test_app):
-    response = test_app.post("/notes/", data=json.dumps({"tag": "something"}))
+    response = test_app.post("/notes/", data=json.dumps({"tag": TAG_ONE}))
     assert response.status_code == 422
 
     response = test_app.post("/notes/", data=json.dumps({"tag": "1", "summary": "2"}))
@@ -29,7 +33,7 @@ def test_create_note_invalid_json(test_app):
 
 
 def test_read_note(test_app, monkeypatch):
-    test_data = {"id": 1, "tag": "blossom-tiger-soap", "summary": "all the things you are", "hash": "fadecafe", "local_time": "2020-12-31T12:34:56.123456Z"}
+    test_data = {"id": 1, "tag": TAG_ONE, "summary": SUMMARY_ONE, "revision": REVISION_ONE, "local_time": LOCAL_TIME_ONE}
 
     async def mock_get(id):
         return test_data
@@ -57,8 +61,8 @@ def test_read_note_incorrect_id(test_app, monkeypatch):
 
 def test_read_all_notes(test_app, monkeypatch):
     test_data = [
-        {"title": "something", "description": "something else", "id": 1},
-        {"title": "someone", "description": "someone else", "id": 2},
+        {"tag": TAG_ONE, "summary": SUMMARY_ONE, "id": 1},
+        {"tag": "someone", "summary": "someone else", "id": 2},
     ]
 
     async def mock_get_all():
@@ -72,7 +76,7 @@ def test_read_all_notes(test_app, monkeypatch):
 
 
 def test_update_note(test_app, monkeypatch):
-    test_update_data = {"title": "someone", "description": "someone else", "id": 1}
+    test_update_data = {"tag": TAG_ONE, "summary": "something completely different", "id": 1}
 
     async def mock_get(id):
         return True
@@ -93,11 +97,11 @@ def test_update_note(test_app, monkeypatch):
     "id, payload, status_code",
     [
         [1, {}, 422],
-        [1, {"description": "bar"}, 422],
-        [999, {"title": "foo", "description": "bar"}, 404],
-        [1, {"title": "1", "description": "bar"}, 422],
-        [1, {"title": "foo", "description": "1"}, 422],
-        [0, {"title": "foo", "description": "bar"}, 422],
+        [1, {"summary": "yes"}, 422],
+        [999, {"tag": "here", "sumamry": "dunno"}, 404],
+        [1, {"tag": "1", "summary": "not ok"}, 422],
+        [1, {"tag": "maybe", "summary": "12"}, 422],
+        [0, {"tag": "no", "summary": "ok"}, 422],
     ],
 )
 def test_update_note_invalid(test_app, monkeypatch, id, payload, status_code):
@@ -111,7 +115,7 @@ def test_update_note_invalid(test_app, monkeypatch, id, payload, status_code):
 
 
 def test_remove_note(test_app, monkeypatch):
-    test_data = {"title": "something", "description": "something else", "id": 1}
+    test_data = {"tag": TAG_ONE, "summary": "something else or what?", "id": 1}
 
     async def mock_get(id):
         return test_data
