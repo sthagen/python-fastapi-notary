@@ -16,7 +16,7 @@ notes = Table(
     Column("id", Integer, primary_key=True),
     Column("tag", String(50)),
     Column("summary", String(50)),
-    Column("hash", String(50)),
+    Column("revision", String(50)),
     Column("local_time", String(50)),
     Column("created_date", DateTime, default=func.now(), nullable=False),
 )
