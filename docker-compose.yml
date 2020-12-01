@@ -1,0 +1,23 @@
+version: '3.8'
+
+services:
+  web:
+    build: ./src
+    command: uvicorn app.main:app --reload --workers 1 --host 0.0.0.0 --port 8000
+    volumes:
+      - ./src/:/usr/src/app/
+    ports:
+      - 8002:8000
+    environment:
+      - DATABASE_URL=postgresql://a_pg_user:a_pg_pw@db/notary
+  db:
+    image: postgres:12.1-alpine
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    environment:
+      - POSTGRES_USER=a_pg_user
+      - POSTGRES_PASSWORD=a_pg_pw
+      - POSTGRES_DB=notary
+
+volumes:
+  postgres_data:
