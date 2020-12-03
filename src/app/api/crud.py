@@ -3,7 +3,15 @@ from app.db import notes, database
 
 
 async def post(payload: NoteSchema):
-    query = notes.insert().values(tag=payload.tag, summary=payload.summary, revision=payload.revision, local_time=payload.local_time)
+    query = notes.insert().values(
+        tag=payload.tag,
+        topic=payload.topic,
+        summary=payload.summary,
+        digest=payload.digest,
+        source_url=payload.source_url,
+        target_url=payload.target_url,
+        time_ref=payload.time_ref
+    )
     return await database.execute(query=query)
 
 
@@ -22,7 +30,15 @@ async def put(id: int, payload: NoteSchema):
         notes
         .update()
         .where(id == notes.c.id)
-        .values(tag=payload.tag, summary=payload.summary, revision=payload.revision, local_time=payload.local_time)
+        .values(
+            tag=payload.tag,
+            topic=payload.topic,
+            summary=payload.summary,
+            digest=payload.digest,
+            source_url=payload.source_url,
+            target_url=payload.target_url,
+            time_ref=payload.time_ref
+        )
         .returning(notes.c.id)
     )
     return await database.execute(query=query)
