@@ -15,9 +15,12 @@ notes = Table(
     metadata,
     Column("id", Integer, primary_key=True),
     Column("tag", String(50)),
-    Column("summary", String(50)),
-    Column("revision", String(50)),
-    Column("local_time", String(50)),
+    Column("topic", String(50)),
+    Column("summary", String(150)),
+    Column("digest", String(150)),
+    Column("source_url", String(150)),
+    Column("target_url", String(150)),
+    Column("time_ref", String(50)),
     Column("created_date", DateTime, default=func.now(), nullable=False),
 )
 
