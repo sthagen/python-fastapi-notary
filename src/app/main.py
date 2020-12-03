@@ -4,7 +4,13 @@ from fastapi import FastAPI
 
 metadata.create_all(engine)
 
-app = FastAPI()
+app = FastAPI(
+    openapi_url="/notary/api/v1/openapi.json",
+    docs_url="/notary/documentation",
+    redoc_url=None,
+    title="Build Notary",
+    description="The build notary function provides unique identifiers across topics to tag builds and artifacts",
+    version="1.0.0",)
 
 
 @app.on_event("startup")
@@ -17,5 +23,5 @@ async def shutdown():
     await database.disconnect()
 
 
-app.include_router(ping.router)
-app.include_router(notes.router, prefix="/notes", tags=["notes"])
+app.include_router(ping.router, prefix="/notary")
+app.include_router(notes.router, prefix="/notary/notes", tags=["notes"])
