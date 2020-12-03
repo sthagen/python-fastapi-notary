@@ -14,9 +14,12 @@ async def create_note(payload: NoteSchema):
     response_object = {
         "id": note_id,
         "tag": payload.tag,
+        "topic": payload.topic,
         "summary": payload.summary,
-        "revision": payload.revision,
-        "local_time": payload.local_time,
+        "digest": payload.digest,
+        "source_url": payload.source_url,
+        "target_url": payload.target_url,
+        "time_ref": payload.time_ref,
     }
     return response_object
 
@@ -45,9 +48,12 @@ async def update_note(payload: NoteSchema, id: int = Path(..., gt=0),):
     response_object = {
         "id": note_id,
         "tag": payload.tag,
+        "topic": payload.topic,
         "summary": payload.summary,
-        "revision": payload.revision,
-        "local_time": payload.local_time,
+        "digest": payload.digest,
+        "source_url": payload.source_url,
+        "target_url": payload.target_url,
+        "time_ref": payload.time_ref,
     }
     return response_object
 
