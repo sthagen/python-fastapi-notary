@@ -1,3 +1,4 @@
+import copy
 import json
 
 import pytest
@@ -5,42 +6,75 @@ import pytest
 from app.api import crud
 
 TAG_ONE = "blossom-tiger-soap"
+TOPIC_ONE = "product"
 SUMMARY_ONE = "all the things you are"
-REVISION_ONE = "fadecafe"
-LOCAL_TIME_ONE = "2020-12-31T12:34:56.123456Z"
+DIGEST_ONE = "sha512:fadecafefadecafefadecafefadecafefadecafefadecafefadecafefadecafefadecafefadecafefadecafefadecafefadecafefadecafefadecafefadecafe"
+SOURCE_URL_ONE = "https://example.com/source"
+TARGET_URL_ONE = "https://example.com/target"
+TIME_REF_ONE = "2020-12-31T12:34:56.123456Z"
+
+PAYLOAD_NOTE_ONE = {
+        "tag": TAG_ONE,
+        "topic": TOPIC_ONE,
+        "summary": SUMMARY_ONE,
+        "digest": DIGEST_ONE,
+        "source_url": SOURCE_URL_ONE,
+        "target_url": TARGET_URL_ONE,
+        "time_ref": TIME_REF_ONE,
+    }
+NOTES_NOTE_ONE = {"id": 1, **PAYLOAD_NOTE_ONE}
+
+TAG_TWO = "ginger-cat-key"
+TOPIC_TWO = "prototype"
+SUMMARY_TWO = "all the things you are too"
+DIGEST_TWO = "sha512:beefcafefadecafefadecafefadecafefadecafefadecafefadecafefadecafefadecafefadecafefadecafefadecafefadecafefadecafefadecafefadecafe"
+SOURCE_URL_TWO = "https://example.com/source/2"
+TARGET_URL_TWO = "https://example.com/target/2"
+TIME_REF_TWO = "2020-12-31T12:34:56.123457Z"
+
+PAYLOAD_NOTE_TWO = {
+        "tag": TAG_TWO,
+        "topic": TOPIC_TWO,
+        "summary": SUMMARY_TWO,
+        "digest": DIGEST_TWO,
+        "source_url": SOURCE_URL_TWO,
+        "target_url": TARGET_URL_TWO,
+        "time_ref": TIME_REF_TWO,
+    }
+NOTES_NOTE_TWO = {"id": 2, **PAYLOAD_NOTE_TWO}
+
 
 def test_create_note(test_app, monkeypatch):
-    test_request_payload = {"tag": TAG_ONE, "summary": SUMMARY_ONE, "revision": REVISION_ONE, "local_time": LOCAL_TIME_ONE}
-    test_response_payload = {"id": 1, "tag": TAG_ONE, "summary": SUMMARY_ONE, "revision": REVSION_ONE, "local_time": LOCAL_TIME_ONE}
+    test_request_payload = copy.deepcopy(PAYLOAD_NOTE_ONE)
 
     async def mock_post(payload):
         return 1
 
     monkeypatch.setattr(crud, "post", mock_post)
 
-    response = test_app.post("/notes/", data=json.dumps(test_request_payload),)
+    response = test_app.post("/notary/notes/", data=json.dumps(test_request_payload),)
 
     assert response.status_code == 201
-    assert response.json() == test_response_payload
+    assert response.json() == NOTES_NOTE_ONE
 
 
 def test_create_note_invalid_json(test_app):
-    response = test_app.post("/notes/", data=json.dumps({"tag": TAG_ONE}))
+    response = test_app.post("/notary/notes/", data=json.dumps({"tag": TAG_ONE}))
     assert response.status_code == 422
 
-    response = test_app.post("/notes/", data=json.dumps({"tag": "1", "summary": "2"}))
+    response = test_app.post("/notary/notes/", data=json.dumps({"tag": "1", "summary": "2"}))
     assert response.status_code == 422
 
 
 def test_read_note(test_app, monkeypatch):
-    test_data = {"id": 1, "tag": TAG_ONE, "summary": SUMMARY_ONE, "revision": REVISION_ONE, "local_time": LOCAL_TIME_ONE}
+    test_data = NOTES_NOTE_ONE
 
     async def mock_get(id):
         return test_data
 
     monkeypatch.setattr(crud, "get", mock_get)
 
-    response = test_app.get("/notes/1")
+    response = test_app.get("/notary/notes/1")
     assert response.status_code == 200
     assert response.json() == test_data
 
@@ -51,18 +85,18 @@ def test_read_note_incorrect_id(test_app, monkeypatch):
 
     monkeypatch.setattr(crud, "get", mock_get)
 
-    response = test_app.get("/notes/999")
+    response = test_app.get("/notary/notes/999")
     assert response.status_code == 404
     assert response.json()["detail"] == "Note not found"
 
-    response = test_app.get("/notes/0")
+    response = test_app.get("/notary/notes/0")
     assert response.status_code == 422
 
 
 def test_read_all_notes(test_app, monkeypatch):
     test_data = [
-        {"tag": TAG_ONE, "summary": SUMMARY_ONE, "id": 1},
-        {"tag": "someone", "summary": "someone else", "id": 2},
+        copy.deepcopy(NOTES_NOTE_ONE),
+        copy.deepcopy(NOTES_NOTE_TWO),
     ]
 
     async def mock_get_all():
@@ -70,13 +104,13 @@ def test_read_all_notes(test_app, monkeypatch):
 
     monkeypatch.setattr(crud, "get_all", mock_get_all)
 
-    response = test_app.get("/notes/")
+    response = test_app.get("/notary/notes/")
     assert response.status_code == 200
     assert response.json() == test_data
 
 
 def test_update_note(test_app, monkeypatch):
-    test_update_data = {"tag": TAG_ONE, "summary": "something completely different", "id": 1}
+    test_update_data = copy.deepcopy(NOTES_NOTE_ONE)
 
     async def mock_get(id):
         return True
@@ -88,7 +122,7 @@ def test_update_note(test_app, monkeypatch):
 
     monkeypatch.setattr(crud, "put", mock_put)
 
-    response = test_app.put("/notes/1/", data=json.dumps(test_update_data))
+    response = test_app.put("/notary/notes/1/", data=json.dumps(test_update_data))
     assert response.status_code == 200
     assert response.json() == test_update_data
 
@@ -110,7 +144,7 @@ def test_update_note_invalid(test_app, monkeypatch, id, payload, status_code):
 
     monkeypatch.setattr(crud, "get", mock_get)
 
-    response = test_app.put(f"/notes/{id}/", data=json.dumps(payload),)
+    response = test_app.put(f"/notary/notes/{id}/", data=json.dumps(payload),)
     assert response.status_code == status_code
 
 
@@ -127,7 +161,7 @@ def test_remove_note(test_app, monkeypatch):
 
     monkeypatch.setattr(crud, "delete", mock_delete)
 
-    response = test_app.delete("/notes/1/")
+    response = test_app.delete("/notary/notes/1/")
     assert response.status_code == 200
     assert response.json() == test_data
 
@@ -138,9 +172,9 @@ def test_remove_note_incorrect_id(test_app, monkeypatch):
 
     monkeypatch.setattr(crud, "get", mock_get)
 
-    response = test_app.delete("/notes/999/")
+    response = test_app.delete("/notary/notes/999/")
     assert response.status_code == 404
     assert response.json()["detail"] == "Note not found"
 
-    response = test_app.delete("/notes/0/")
+    response = test_app.delete("/notary/notes/0/")
     assert response.status_code == 422
