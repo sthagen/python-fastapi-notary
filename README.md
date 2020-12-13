@@ -4,4 +4,4 @@ Moving fingers and dangling thoughts
 ## Dtatus
 Experimental.
 
-*Note*: The default branch is `default`. 
+**Note**: The name of the default branch is `default`.
